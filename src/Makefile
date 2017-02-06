@@ -14,7 +14,7 @@ fastdebug: export OPTS = -g -O3
 profiling: export OPTS = -g -pg
 
 all debug fastdebug profiling: popgen.o
-	$(CC) -o drifttest drifttest.c popgen.o $(LIBS) $(CFLAGS) $(OPTS)
+	$(CC) -o drifttest main.c popgen.o $(LIBS) $(CFLAGS) $(OPTS)
 
 clean:
 	rm -rf *.o drifttest

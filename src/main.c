@@ -1,6 +1,8 @@
 /*
  Copyright INRA
- author: Miguel Navascués (2016)
+ author: Miguel Navascués (2017)
+
+ based on code by Renaud Vitalis
 
  This file is part of DriftTest.
 
@@ -30,7 +32,7 @@
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
 
-#include "drifttest.h"
+#include "defs.h"
 #include "popgen.h"
 
 int main (int argc, char *argv[])
@@ -39,13 +41,12 @@ int main (int argc, char *argv[])
 
   //declare random number generator and set type to “Mersenne Twister” (MT19937)
   gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
-  unsigned long seed = 0;
+  seed = 0;
 
   unsigned int Ne;
   double Fis, obs_Fst;
   double p;
   unsigned int genotype_counts[2][3];
-  int nbr_simuls;
 
   //declare variables for parsing command line arguments
   int opt = 0;
@@ -57,6 +58,7 @@ int main (int argc, char *argv[])
     {"maf",required_argument,NULL,3},
     {"help",no_argument,NULL,201},
     {"version",no_argument,NULL,202},
+    {"test",no_argument,NULL,203},
     {NULL,0,NULL,0}
   };
 
@@ -82,6 +84,13 @@ int main (int argc, char *argv[])
         break;
       case 202 :
         print_version();
+        exit(EXIT_SUCCESS);
+      case 203 :
+	seed = 123456;
+	tau  = 10;
+	maf  = 0.1;
+	gsl_rng_set(r,seed);
+        print_test(r);
         exit(EXIT_SUCCESS);
       default :
         print_usage();
@@ -178,17 +187,47 @@ int main (int argc, char *argv[])
 
 // PRINT USAGE 
 
-void print_usage() {
-	printf("usage: %s [ options ]\n",program_name);
-	printf("valid options are :\n");
-	printf("-help\t\t\t print this message\n");
-	printf("-version\t\t print version\n");
-	printf("-seed\t\t\t initial seed for the random number generator (default: GSL default)\n");
+void print_usage()
+{
+  printf("usage: %s [ options ]\n",program_name);
+  printf("valid options are :\n");
+  printf("-help\t\t\t print this message\n");
+  printf("-version\t\t print version\n");
+  printf("-test\t\t\t print results of a set of tests on the code\n");
+  printf("-seed\t\t\t initial seed for the random number generator (default: GSL default)\n");
   exit(EXIT_SUCCESS);
 }
 
 // PRINT VERSION 
 
-void print_version() {
-	printf("You are running version %s\n",VERSION);
+void print_version()
+{
+  printf("You are running version %s\n",VERSION);
+}
+
+// PRINT TESTS 
+
+void print_test(const gsl_rng * r)
+{
+
+  printf("You are running a set of tests to verify the integrity of drifttest code\n\n");
+
+  if (seed != 123456)
+  {
+    seed = 123456; 
+    printf("Seed was set to %lu\n\n", seed);
+  }
+
+   
+  // drift_sim
+  double allele_freq;
+  allele_freq = drift_sim(r, 0.5, 10000);
+  printf ("Initial allele frequency: 0.5\nTime of drift: %d generations\nStrength of drift: Ne=10000\nFinal allele frequency: %f\n\n", tau, allele_freq);
+  if (allele_freq!= 0.4852) fprintf(stderr, "Warning: final frequency should be 0.4852 for seed=123456\n");
+  allele_freq = drift_sim(r, 0.5, 10);
+  printf ("Initial allele frequency: 0.5\nTime of drift: %d generations\nStrength of drift: Ne=10\nFinal allele frequency: %f\n\n", tau, allele_freq);
+  if (allele_freq!= 0.2) fprintf(stderr, "Warning: final frequency should be 0.2 for seed=123456\n");
+
+
+
 }

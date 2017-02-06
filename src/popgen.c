@@ -39,6 +39,11 @@ double drift_sim(const gsl_rng * r,
   return freq;
 }
 
+
+/* Simulation of genotype frequencies in a sample of idividuals
+   taken at the begining and at the end of a simulation of drift
+   with function drift_sim()
+*/
 void counts_sim(const gsl_rng * r,
                 unsigned int Ne,
                 double Fis,

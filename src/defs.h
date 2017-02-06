@@ -33,13 +33,14 @@
 // structure definitions
 // ---------------------
 
+/*
 typedef struct {
 	int nbr_loci;     // Number of loci
         int *pop;         // population origin of each individual
 	int **genotypes;  // genotype for each individual and locus, 
                           // coded as the number of copies of reference allele
 } data_struct;
-
+*/
 
 // ----------------
 // local functions 
@@ -47,6 +48,7 @@ typedef struct {
 
 void print_usage();
 void print_version();
+void print_test(const gsl_rng * r);
 
 // ----------------
 // GLOBAL VARIABLES
@@ -55,5 +57,7 @@ void print_version();
 GLOBAL_VARIABLE const char *program_name;
 GLOBAL_VARIABLE int tau;
 GLOBAL_VARIABLE double maf;
+GLOBAL_VARIABLE unsigned long seed;
+GLOBAL_VARIABLE unsigned long nbr_simuls;
 GLOBAL_VARIABLE FILE *logfile;
 

@@ -28,7 +28,7 @@
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
 
-#include "drifttest.h"
+#include "defs.h"
 
 double drift_sim(const gsl_rng * r, double freq, unsigned int Ne);
 
