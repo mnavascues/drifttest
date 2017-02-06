@@ -1,2 +1,2 @@
-popgen.o
+src/*.o
 drifttest

@@ -1,6 +1,8 @@
 /*
  Copyright INRA
- author: Miguel Navascués (2016)
+ author: Miguel Navascués (2017)
+
+ based on code by Renaud Vitalis
 
  This file is part of DriftTest.
 

@@ -34,10 +34,17 @@
 
 #include "defs.h"
 #include "popgen.h"
+#include "test.h"
 
 int main (int argc, char *argv[])
 {
-  printf ("\ndrifttest\n\n");
+  printf ("\n\n\nThis is DriftTest\n\n\n");
+
+  printf ("DriftTest is a computer program whose purpose is to is to detect\n");
+  printf ("loci under selection based on changes in allele frequencies\n");
+  printf ("between two time samples of the same population.\n\n\n");
+
+
 
   //declare random number generator and set type to “Mersenne Twister” (MT19937)
   gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
@@ -205,29 +212,15 @@ void print_version()
   printf("You are running version %s\n",VERSION);
 }
 
-// PRINT TESTS 
-
-void print_test(const gsl_rng * r)
-{
-
-  printf("You are running a set of tests to verify the integrity of drifttest code\n\n");
-
-  if (seed != 123456)
-  {
-    seed = 123456; 
-    printf("Seed was set to %lu\n\n", seed);
-  }
-
-   
-  // drift_sim
-  double allele_freq;
-  allele_freq = drift_sim(r, 0.5, 10000);
-  printf ("Initial allele frequency: 0.5\nTime of drift: %d generations\nStrength of drift: Ne=10000\nFinal allele frequency: %f\n\n", tau, allele_freq);
-  if (allele_freq!= 0.4852) fprintf(stderr, "Warning: final frequency should be 0.4852 for seed=123456\n");
-  allele_freq = drift_sim(r, 0.5, 10);
-  printf ("Initial allele frequency: 0.5\nTime of drift: %d generations\nStrength of drift: Ne=10\nFinal allele frequency: %f\n\n", tau, allele_freq);
-  if (allele_freq!= 0.2) fprintf(stderr, "Warning: final frequency should be 0.2 for seed=123456\n");
 
 
 
-}
+
+
+
+
+
+
+
+
+

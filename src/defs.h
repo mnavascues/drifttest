@@ -1,6 +1,8 @@
 /*
  Copyright INRA
- author: Miguel Navascués (2016)
+ author: Miguel Navascués (2017)
+
+ based on code by Renaud Vitalis
 
  This file is part of DriftTest.
 
@@ -48,7 +50,6 @@ typedef struct {
 
 void print_usage();
 void print_version();
-void print_test(const gsl_rng * r);
 
 // ----------------
 // GLOBAL VARIABLES
