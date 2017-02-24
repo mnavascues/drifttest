@@ -23,28 +23,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _POPGEN_H
-#define _POPGEN_H
+
+#ifndef _READDATA_H
+#define _READDATA_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>            // for computing common mathematical operations
-#include <gsl/gsl_rng.h>     // GSL: random number generation
-#include <gsl/gsl_randist.h> // GSL: random number distributions
+#include <string.h>
 
 #include "main.h"
 
-double drift_sim(const gsl_rng * r, double freq, unsigned int Ne);
-
-void counts_sim(const gsl_rng * r, unsigned int Ne,
-                double Fis, const unsigned int one_locus_genotype_counts[],
-                const unsigned int sample_size[],
-                unsigned int sim_genotype_counts[2][3]);
-
-double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2][3]);
-
-double p_value(const gsl_rng * r, unsigned int Ne, double Fis,
-               int nbr_simuls, unsigned int one_locus_genotype_counts[2][3]);
-
+void read_data(data_struct *data,char *filename);
+void check_infile();
 
 #endif
+

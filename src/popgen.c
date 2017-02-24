@@ -49,18 +49,18 @@ double drift_sim(const gsl_rng * r,
 void counts_sim(const gsl_rng * r,
                 unsigned int Ne,
                 double Fis,
-                const unsigned int genotype_counts[],
+                const unsigned int one_locus_genotype_counts[],
                 const unsigned int sample_size[],
                 unsigned int sim_genotype_counts[2][3])
 {
   double alpha[3];
   double genotype_frequencies[3];
-  double allele_freq; 
+  double allele_freq;
 
   // alpha parameters for dirichlet
-  alpha[0] = 1.0 + (double) genotype_counts[0];
-  alpha[1] = 1.0 + (double) genotype_counts[1];
-  alpha[2] = 1.0 + (double) genotype_counts[2];
+  alpha[0] = 1.0 + (double) one_locus_genotype_counts[0];
+  alpha[1] = 1.0 + (double) one_locus_genotype_counts[1];
+  alpha[2] = 1.0 + (double) one_locus_genotype_counts[2];
 
   // use dirichlet-multinomial to get frequencies of genotypes in population and sample
   gsl_ran_dirichlet (r, 3, alpha, genotype_frequencies);
@@ -84,7 +84,7 @@ void counts_sim(const gsl_rng * r,
                 and three columns: counts of homozygous allele 1,
                 counts of heterozygous and counts of homozygous allele 2    
 */
-double FST_2pop_from_genotypes_counts (unsigned int genotype_counts[2][3])
+double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2][3])
 {
   int pop;
   int counts[2] = {0, 0};
@@ -103,9 +103,9 @@ double FST_2pop_from_genotypes_counts (unsigned int genotype_counts[2][3])
 
   for (pop = 0; pop < 2; pop++) {
     // get allele counts of allele 2
-    counts[pop] = genotype_counts[pop][0] * 2 + genotype_counts[pop][1]; 
+    counts[pop] = one_locus_genotype_counts[pop][0] * 2 + one_locus_genotype_counts[pop][1]; 
     // get sample sizes
-    n[pop] = genotype_counts[pop][0] + genotype_counts[pop][1] + genotype_counts[pop][2];
+    n[pop] = one_locus_genotype_counts[pop][0] + one_locus_genotype_counts[pop][1] + one_locus_genotype_counts[pop][2];
   }
 
   // get total sample size and other sample size terms for Weir and Cockerham
@@ -117,8 +117,8 @@ double FST_2pop_from_genotypes_counts (unsigned int genotype_counts[2][3])
     p1[pop] = (2.0 * n[pop] - counts[pop]) / (2.0 * n[pop]);
     p2[pop] = counts[pop] / (2.0 * n[pop]);
  
-    frq_hmzgtes_p1[pop] = (double) genotype_counts[pop][0] / (double) n[pop];
-    frq_hmzgtes_p2[pop] = (double) genotype_counts[pop][2] / (double) n[pop];
+    frq_hmzgtes_p1[pop] = (double) one_locus_genotype_counts[pop][0] / (double) n[pop];
+    frq_hmzgtes_p2[pop] = (double) one_locus_genotype_counts[pop][2] / (double) n[pop];
   }
 
   p1bar = (2.0 * n[0] - counts[0] + 2.0 * n[1] - counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
@@ -149,7 +149,7 @@ double p_value(const gsl_rng * r,
                unsigned int Ne,
                double Fis,
                int nbr_simuls,
-               unsigned int genotype_counts[2][3])
+               unsigned int one_locus_genotype_counts[2][3])
 {
   int pop, sim;
   double obs_Fst, sim_Fst;
@@ -159,13 +159,13 @@ double p_value(const gsl_rng * r,
   double p_value = 0.0;
 
   for (pop = 0; pop < 2; pop++) {
-    sample_size[pop] = genotype_counts[pop][0] + genotype_counts[pop][1] + genotype_counts[pop][2];
+    sample_size[pop] = one_locus_genotype_counts[pop][0] + one_locus_genotype_counts[pop][1] + one_locus_genotype_counts[pop][2];
   }
-  obs_Fst = FST_2pop_from_genotypes_counts(genotype_counts);
+  obs_Fst = FST_2pop_from_genotypes_counts(one_locus_genotype_counts);
 
   sim = 0;
   while (sim < nbr_simuls) {
-    counts_sim(r, Ne, Fis, genotype_counts[0], sample_size, sim_genotype_counts);
+    counts_sim(r, Ne, Fis, one_locus_genotype_counts[0], sample_size, sim_genotype_counts);
     for (pop = 0; pop < 2; pop++)
     {
       allele_freq[pop] = (sim_genotype_counts[pop][0] * 2 + sim_genotype_counts[pop][1]) / (2.0 * sample_size[pop]);

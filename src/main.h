@@ -23,26 +23,29 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef _MAIN_H
+#define _MAIN_H
 
 #define GLOBAL_VARIABLE
 
 #define VERSION     "0.0.0"
-#define LOGFILE     "results.log"
-#define OUTFILE     "results.out"
+//#define LOGFILE     "results.log"
+//#define OUTFILE     "results.out"
 #define NBR_SIMULS  1e4
 
 // ---------------------
 // structure definitions
 // ---------------------
 
-/*
+
 typedef struct {
-	int nbr_loci;     // Number of loci
-        int *pop;         // population origin of each individual
-	int **genotypes;  // genotype for each individual and locus, 
-                          // coded as the number of copies of reference allele
+	int nbr_ind;                // Number of individuals
+	int nbr_loci;               // Number of loci
+        int *pop;                   // population origin of each individual
+	int **genotypes;            // genotype for each individual and locus, 
+                                    // coded as the number of copies of reference allele
+	int ***genotype_counts;     // counts of each genotype per locus per population
 } data_struct;
-*/
 
 // ----------------
 // local functions 
@@ -58,7 +61,6 @@ void print_version();
 GLOBAL_VARIABLE const char *program_name;
 GLOBAL_VARIABLE int tau;
 GLOBAL_VARIABLE double maf;
-GLOBAL_VARIABLE unsigned long seed;
 GLOBAL_VARIABLE unsigned long nbr_simuls;
-GLOBAL_VARIABLE FILE *logfile;
 
+#endif

@@ -32,28 +32,24 @@
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
 
-#include "defs.h"
+#include "main.h"
 #include "popgen.h"
 #include "test.h"
 
 int main (int argc, char *argv[])
 {
-  printf ("\n\n\nThis is DriftTest\n\n\n");
-
+  printf ("\n\n\nThis is DriftTest by Miguel Navascués\n");
+  printf("(version %s)\n\n\n",VERSION);
   printf ("DriftTest is a computer program whose purpose is to is to detect\n");
   printf ("loci under selection based on changes in allele frequencies\n");
   printf ("between two time samples of the same population.\n\n\n");
 
-
+  unsigned long seed  = 0;
+  char *data_filename = "data/data.txt";
+  //data_struct data;
 
   //declare random number generator and set type to “Mersenne Twister” (MT19937)
   gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
-  seed = 0;
-
-  unsigned int Ne;
-  double Fis, obs_Fst;
-  double p;
-  unsigned int genotype_counts[2][3];
 
   //declare variables for parsing command line arguments
   int opt = 0;
@@ -63,6 +59,7 @@ int main (int argc, char *argv[])
     {"seed",required_argument,NULL,1},
     {"tau",required_argument,NULL,2},
     {"maf",required_argument,NULL,3},
+    {"file",required_argument,NULL,4},
     {"help",no_argument,NULL,201},
     {"version",no_argument,NULL,202},
     {"test",no_argument,NULL,203},
@@ -76,15 +73,19 @@ int main (int argc, char *argv[])
     switch (opt) {
       case 1 :
         seed = atoi(optarg);
-        printf ("Seed for random number generator: ’%lu’ \n", seed);
+        printf ("Seed for random number generator: %lu\n", seed);
         break;
       case 2 :
         tau = atoi(optarg);
-        printf ("Number of generations between samples (tau): ’%d’ \n", tau);
+        printf ("Number of generations between samples (tau): %d\n", tau);
         break;
       case 3 :
         maf = atof(optarg);
-        printf ("Minimum allele frequency (maf): ’%f’ \n", maf);
+        printf ("Minimum allele frequency (maf): %f\n", maf);
+        break;
+      case 4 :
+        data_filename = optarg;
+        printf ("Input data file: %s\n", data_filename);
         break;
       case 201 :
         print_usage();
@@ -126,6 +127,7 @@ int main (int argc, char *argv[])
   //printf ("Random number generator: ’%s’ \n", gsl_rng_name (r));
   gsl_rng_set(r,seed);
 
+  //read_data(&data,data_filename);
 
 
 
@@ -134,43 +136,6 @@ int main (int argc, char *argv[])
 
 
 
-
-
-
-
-  Ne = 111;
-  Fis = 0.8;
-  genotype_counts[0][0] = 20;
-  genotype_counts[0][1] = 15;
-  genotype_counts[0][2] = 65;
-  genotype_counts[1][0] = 95;
-  genotype_counts[1][1] = 1;
-  genotype_counts[1][2] = 4;
-
-
-  printf ("Ne: ’%d’ \n", Ne);
-  printf ("\n");
-  printf ("Fis: ’%f’ \n", Fis);
-  printf ("\n");
-  printf ("start AA: ’%d’ \n", genotype_counts[0][0]);
-  printf ("start AB: ’%d’ \n", genotype_counts[0][1]);
-  printf ("start BB: ’%d’ \n", genotype_counts[0][2]);
-  printf ("\n");
-  printf ("end AA: ’%d’ \n", genotype_counts[1][0]);
-  printf ("end AB: ’%d’ \n", genotype_counts[1][1]);
-  printf ("end BB: ’%d’ \n", genotype_counts[1][2]);
-
-
-
-  obs_Fst = FST_2pop_from_genotypes_counts(genotype_counts);
-  printf ("\n");
-  printf ("Fst: ’%f’ \n", obs_Fst);
-  nbr_simuls = NBR_SIMULS;
-  p = p_value(r, Ne, Fis, nbr_simuls, genotype_counts);
-  printf ("\n");
-  printf ("p: ’%f’ \n", p);
-
- 
 
 
 

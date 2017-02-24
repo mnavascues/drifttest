@@ -23,6 +23,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef _TEST_H
+#define _TEST_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +32,9 @@
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
 
-#include "defs.h"
+#include "main.h"
 #include "popgen.h"
 
 void print_test(const gsl_rng * r);
 
+#endif
