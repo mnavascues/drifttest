@@ -97,14 +97,14 @@ void print_test(const gsl_rng * r)
   }
 
   // FST_2pop_from_genotypes_counts
-  printf("Checking function FST_2pop_from_genotypes_counts(one_locus_genotype_counts[2][3])\n");
+  printf("Checking function one_locus_FST(one_locus_genotype_counts[2][3])\n");
   printf("Fst from genotype counts 20/5/75 & 80/2/18:\n");
-  obs_Fst = FST_2pop_from_genotypes_counts(one_locus_genotype_counts);
+  obs_Fst = one_locus_FST(one_locus_genotype_counts);
   printf ("Fst = %f\n", obs_Fst);
   printf ("It should be: 0.505721\n");
   //if (obs_Fst!= 0.505721) fprintf(stderr, "Warning: observed Fst should be 0.505721\n");
   printf("Fst from simulated genotype counts (they should be 16/12/72 & 6/2/92):\n");
-  obs_Fst = FST_2pop_from_genotypes_counts(sim_genotype_counts);
+  obs_Fst = one_locus_FST(sim_genotype_counts);
   printf ("Fst = %f\n", obs_Fst);
   printf ("It should be: 0.078945\n\n");
   //if (obs_Fst!= 0.078945) fprintf(stderr, "Warning: observed Fst should be 0.078945 for seed=123456\n\n");
@@ -123,13 +123,13 @@ void print_test(const gsl_rng * r)
   
   printf ("Number of individuals in data file = %d\n", data.nbr_ind);
   printf ("Number of loci in data file        = %d\n", data.nbr_loci);
-  printf ("First individual belong to population = %d\n", data.pop[0]);
-  printf ("data.genotypes[0][0] = %d\n", data.genotypes[0][0]);
-  printf ("data.genotypes[0][1] = %d\n", data.genotypes[0][1]);
-  printf ("data.genotypes[0][2] = %d\n", data.genotypes[0][2]);
-  printf ("data.genotypes[1][0] = %d\n", data.genotypes[1][0]);
-  printf ("data.genotypes[1][1] = %d\n", data.genotypes[1][1]);
-  printf ("data.genotypes[1][2] = %d\n", data.genotypes[1][2]);
+  //printf ("First individual belong to population = %d\n", data.pop[0]);
+  //printf ("data.genotypes[0][0] = %d\n", data.genotypes[0][0]);
+  //printf ("data.genotypes[0][1] = %d\n", data.genotypes[0][1]);
+  //printf ("data.genotypes[0][2] = %d\n", data.genotypes[0][2]);
+  //printf ("data.genotypes[1][0] = %d\n", data.genotypes[1][0]);
+  //printf ("data.genotypes[1][1] = %d\n", data.genotypes[1][1]);
+  //printf ("data.genotypes[1][2] = %d\n", data.genotypes[1][2]);
 
 
 }

@@ -39,24 +39,29 @@
 
 
 typedef struct {
-	int nbr_ind;                // Number of individuals
-	int nbr_loci;               // Number of loci
-        int *pop;                   // population origin of each individual
-	int **genotypes;            // genotype for each individual and locus, 
-                                    // coded as the number of copies of reference allele
-	int ***genotype_counts;     // counts of each genotype per locus per population
+  int nbr_ind;                     // Number of individuals
+  int nbr_loci;                    // Number of loci
+  int **sample_size;               // sample size per locus per time-sample (after missing data)
+  unsigned int ***genotype_counts; // counts of each genotype per locus per time-sample
 } data_struct;
 
-// ----------------
-// local functions 
-// ----------------
+typedef struct {
+  double Fst; 
+  double Fis;
+  int Ne;
+} global_result_struct;
+
+
+// -----------------
+//  local functions 
+// -----------------
 
 void print_usage();
 void print_version();
 
-// ----------------
-// GLOBAL VARIABLES
-// ----------------
+// ------------------
+//  GLOBAL VARIABLES
+// ------------------
 
 GLOBAL_VARIABLE const char *program_name;
 GLOBAL_VARIABLE int tau;

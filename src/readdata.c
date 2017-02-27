@@ -32,7 +32,10 @@ void read_data(data_struct *data,
   FILE *infile = NULL;
   char X;
   int i,j,k;
+  int pop;
   int count,dummy,nloci,nind;
+  int min1,max1,min2,max2;
+  double mean1,mean2;
 
   if ((infile = fopen(filename,"r")) == NULL) {
     fprintf(stderr,"%s: file not found\n",filename);
@@ -49,26 +52,22 @@ void read_data(data_struct *data,
   fscanf(infile,"%d",&data -> nbr_loci);
   while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r')); // read until finding escape character
 
-  // allocation momory for genotypes and population origin
-  data -> genotypes = (int **) malloc(data -> nbr_loci * sizeof(int *));
+  // allocation memory for genotype counts and sample size
+  data -> genotype_counts = (unsigned int ***) malloc(data -> nbr_loci * sizeof(unsigned int**));
   for (i = 0; i < data -> nbr_loci; ++i) {
-    data -> genotypes[i]=(int *) malloc(data -> nbr_ind * sizeof(int));
-    for (j = 0; j < data -> nbr_ind; ++j) {
-      data -> genotypes[i][j] = -99;
-    }
-  }
-  data -> pop = (int *) malloc(data -> nbr_ind * sizeof(int));
-  for (j = 0; j < data -> nbr_ind; ++j) {
-    data -> pop[j] = 0;
-  }
-  data -> genotype_counts = (int ***) malloc(data -> nbr_loci * sizeof(int**));
-  for (i = 0; i < data -> nbr_loci; ++i) {
-    data -> genotype_counts[i]=(int **) malloc(2 * sizeof(int*));
+    data -> genotype_counts[i]=(unsigned int **) malloc(2 * sizeof(unsigned int*));
     for (j = 0; j < 2; ++j) {
-      data -> genotype_counts[i][j]=(int *) malloc(3 * sizeof(int));
+      data -> genotype_counts[i][j]=(unsigned int *) malloc(3 * sizeof(unsigned int));
       for (k = 0; k < 3; ++k){
         data -> genotype_counts[i][j][k]=0;
       }
+    }
+  }
+  data -> sample_size = (int **) malloc(data -> nbr_loci * sizeof(int*));
+  for (i = 0; i < data -> nbr_loci; ++i) {
+    data -> sample_size[i]=(int *) malloc(2 * sizeof(int));
+    for (j = 0; j < 2; ++j) {
+      data -> sample_size[i][j]=0;
     }
   }
 
@@ -83,12 +82,12 @@ void read_data(data_struct *data,
       if (X != EOF) {
         if (dummy == -1) {
           fprintf(stderr,"%s: unexpected character at individual %d, locus %d.\n",filename,(nind + 1), (nloci + 1));
-          check_infile();
+          check_infile();// program stops
         }
         if (count != -9 && count != 0 && count != 1 && count != 2) {
           fprintf(stderr,"%s: unexpected count of alleles at individual %d, locus %d.\n",filename,(nind + 1), (nloci + 1));
           fprintf(stderr,"Valid values: -9, 0, 1, 2.\n");
-          check_infile();
+          check_infile();// program stops
         }
       }
       nloci++;
@@ -99,11 +98,11 @@ void read_data(data_struct *data,
           nind++;
           if (nloci > (1 + data -> nbr_loci)) {
             fprintf(stderr,"%s: the number of loci at individual no. %d is larger than expected.\n",filename,nind);
-            check_infile();
+            check_infile();// program stops
           }
           if (nloci < (1 + data -> nbr_loci)) {
             fprintf(stderr,"%s: the number of loci at individual no. %d is lower than expected.\n",filename,nind);
-            check_infile();
+            check_infile();// program stops
           }
           if (nloci == (1 + data -> nbr_loci)) {
             break;
@@ -115,11 +114,11 @@ void read_data(data_struct *data,
   } while (X != EOF);
   if (nind < data -> nbr_ind) {
     fprintf(stderr,"%s: the number of ind (%d) is lower than expected (%d).\n",filename,nind,data -> nbr_ind);
-    check_infile();
+    check_infile();// program stops
   }
   if (nind > data -> nbr_ind) {
     fprintf(stderr,"%s: the number of ind (%d) is larger than expected (%d).\n",filename,nind,data -> nbr_ind);
-    check_infile();
+    check_infile();// program stops
   }
   printf("OK\n");
 
@@ -132,32 +131,50 @@ void read_data(data_struct *data,
 
   // read genotypes
   for (j = 0; j < data -> nbr_ind; ++j) {
-    fscanf(infile,"%d",&count);
-    data -> pop[j] = count; 
+    // read first value of line : sample of origin of the individual
+    fscanf(infile,"%d",&pop);
     for (i = 0; i < data -> nbr_loci; ++i) {
       fscanf(infile,"%d",&count);
-      data -> genotypes[j][i] = count; 
-    }
-  }
-
-  fclose(infile);
-  printf("The data consist in %d individuals typed at %d loci\n\n",data -> nbr_ind,data -> nbr_loci);
-  
-  for (i = 0; i < data -> nbr_loci; ++i){
-    for (j = 0; j < data -> nbr_ind; ++j){
-      if (data -> pop[j] == 1){
-        if (data -> genotypes[j][i] == 0) ++data -> genotype_counts[i][0][0];
-        if (data -> genotypes[j][i] == 1) ++data -> genotype_counts[i][0][1];
-        if (data -> genotypes[j][i] == 2) ++data -> genotype_counts[i][0][2];
-      }else if (data -> pop[j] == 2){
-        if (data -> genotypes[j][i] == 0) ++data -> genotype_counts[i][1][0];
-        if (data -> genotypes[j][i] == 1) ++data -> genotype_counts[i][1][1];
-        if (data -> genotypes[j][i] == 2) ++data -> genotype_counts[i][1][2];
+      if (pop == 1){
+        if (count == 0) ++data -> genotype_counts[i][0][0];
+        if (count == 1) ++data -> genotype_counts[i][0][1];
+        if (count == 2) ++data -> genotype_counts[i][0][2];
+      }else if (pop == 2){
+        if (count == 0) ++data -> genotype_counts[i][1][0];
+        if (count == 1) ++data -> genotype_counts[i][1][1];
+        if (count == 2) ++data -> genotype_counts[i][1][2];
       }
     }
-    printf("Genotypes locus %d pop1: %d/%d/%d\n",i,data -> genotype_counts[i][0][0],data -> genotype_counts[i][0][1],data -> genotype_counts[i][0][2]);
-    printf("Genotypes locus %d pop2: %d/%d/%d\n",i,data -> genotype_counts[i][1][0],data -> genotype_counts[i][1][1],data -> genotype_counts[i][1][2]);
   }
+  fclose(infile);
+  min1 = 2147483647;
+  max1 = -2147483648;
+  mean1 = 0.0;
+  min2 = 2147483647;
+  max2 = -2147483648;
+  mean2 = 0.0;
+  for (i = 0; i < data -> nbr_loci; ++i){
+    data -> sample_size[i][0]  = data -> genotype_counts[i][0][0] + data -> genotype_counts[i][0][1] + data -> genotype_counts[i][0][2];
+    data -> sample_size[i][1]  = data -> genotype_counts[i][1][0] + data -> genotype_counts[i][1][1] + data -> genotype_counts[i][1][2];
+    mean1 += data -> sample_size[i][0]; 
+    mean2 += data -> sample_size[i][1]; 
+    if (data -> sample_size[i][0] > max1) max1 = data -> sample_size[i][0];
+    if (data -> sample_size[i][0] < min1) min1 = data -> sample_size[i][0];
+    if (data -> sample_size[i][1] > max2) max2 = data -> sample_size[i][1];
+    if (data -> sample_size[i][1] < min2) min2 = data -> sample_size[i][1];
+    //printf("Genotypes locus %d pop1: %d/%d/%d\n",i,data -> genotype_counts[i][0][0],data -> genotype_counts[i][0][1],data -> genotype_counts[i][0][2]);
+    //printf("Sample size locus %d pop1: %d\n",i,data -> sample_size[i][0]);
+    //printf("Genotypes locus %d pop2: %d/%d/%d\n",i,data -> genotype_counts[i][1][0],data -> genotype_counts[i][1][1],data -> genotype_counts[i][1][2]);
+    //printf("Sample size locus %d pop2: %d\n",i,data -> sample_size[i][1]);
+  }
+  mean1 /= data -> nbr_loci;
+  mean2 /= data -> nbr_loci;
+
+
+  printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
+  printf("Mean (max/min) sample size across loci for sample 1; %f (%d,%d)\n",mean1,min1,max1);
+  printf("Mean (max/min) sample size across loci for sample 2; %f (%d,%d)\n\n",mean2,min2,max2);
+
   
 
 

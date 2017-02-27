@@ -84,7 +84,7 @@ void counts_sim(const gsl_rng * r,
                 and three columns: counts of homozygous allele 1,
                 counts of heterozygous and counts of homozygous allele 2    
 */
-double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2][3])
+double one_locus_FST (unsigned int one_locus_genotype_counts[2][3])
 {
   int pop;
   int counts[2] = {0, 0};
@@ -99,8 +99,9 @@ double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2]
   double SSI = 0;
   double SSP = 0;
   double MSG, MSI, MSP;
-  double FST;
+  double num, den;
 
+  num = den = 0.0;
   for (pop = 0; pop < 2; pop++) {
     // get allele counts of allele 2
     counts[pop] = one_locus_genotype_counts[pop][0] * 2 + one_locus_genotype_counts[pop][1]; 
@@ -139,9 +140,18 @@ double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2]
   MSI = SSI / ((double) nt - 2.0);
   MSP = SSP;
 
-  FST = (MSP - MSI) / (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
-  //FIS = (MSI - MSG) / (MSI + MSG);
-  return FST;
+  // FST = (MSP - MSI) / (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+  // FIS = (MSI - MSG) / (MSI + MSG);
+
+  num = (MSP - MSI);
+  den = (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+
+  if (den > 0) {
+    return ( num / den);
+  }
+  else {
+    return ML_NAN;
+  }
 }
                 
 
@@ -161,7 +171,7 @@ double p_value(const gsl_rng * r,
   for (pop = 0; pop < 2; pop++) {
     sample_size[pop] = one_locus_genotype_counts[pop][0] + one_locus_genotype_counts[pop][1] + one_locus_genotype_counts[pop][2];
   }
-  obs_Fst = FST_2pop_from_genotypes_counts(one_locus_genotype_counts);
+  obs_Fst = one_locus_FST(one_locus_genotype_counts);
 
   sim = 0;
   while (sim < nbr_simuls) {
@@ -174,7 +184,7 @@ double p_value(const gsl_rng * r,
 
     if ((mean_allele_freq >= maf) && (mean_allele_freq <= (1.0 - maf)))
     {
-      sim_Fst = FST_2pop_from_genotypes_counts(sim_genotype_counts);
+      sim_Fst = one_locus_FST(sim_genotype_counts);
       if (sim_Fst >= obs_Fst) p_value += 1.0;
       sim++;
     }
@@ -187,4 +197,94 @@ double p_value(const gsl_rng * r,
 }
 
 
+/* multilocus genotype counts are given as a 3D array,
+   first dimension:  locus
+   second dimension: sample (only two samples, ancestral and modern)
+   third dimension:  genotype count (only three values, i.e. biallelic data)
+                     - counts of homozygous allele 1
+                     - counts of heterozygous
+                     - counts of homozygous allele 2    
+*/
+void F_statistics (data_struct *data, global_result_struct *global_result){
+
+  int locus;
+  int pop;
+  int counts[2] = {0, 0};
+  int n[2] = {0, 0};
+  int nt = 0;
+  int n2 = 0;
+  double nc = 0.0;
+  double p1[2], p2[2];
+  double p1bar, p2bar;
+  double frq_hmzgtes_p1[2], frq_hmzgtes_p2[2];
+  double SSG;
+  double SSI;
+  double SSP;
+  double MSG, MSI, MSP;
+  double numFst, denFst;
+  double numFis, denFis;
+  
+  numFst = denFst = 0.0;
+  numFis = denFis = 0.0;
+  for (locus = 0; locus < data -> nbr_loci; locus++){
+    counts[0] = counts[1] = 0;
+    n[0] = n[1] = 0;
+    nt = n2 = 0;
+    nc = 0.0;
+ 
+    for (pop = 0; pop < 2; pop++) {
+      // get allele counts of allele 2
+      counts[pop] = data -> genotype_counts[locus][pop][0] * 2 + data -> genotype_counts[locus][pop][1]; 
+      // get sample sizes
+      n[pop] = data -> sample_size[locus][pop];
+    }
+
+    // get total sample size and other sample size terms for Weir and Cockerham
+    nt = n[0] + n[1];
+    n2 = (int) pow((double) n[0], 2.0) + (int) pow((double) n[1], 2.0);
+    nc = (double) nt - (double) n2 / (double) nt;
+
+    for (pop = 0; pop < 2; pop++) {
+      p1[pop] = (2.0 * n[pop] - counts[pop]) / (2.0 * n[pop]);
+      p2[pop] = counts[pop] / (2.0 * n[pop]);
+ 
+      frq_hmzgtes_p1[pop] = (double) data -> genotype_counts[locus][pop][0] / (double) n[pop];
+      frq_hmzgtes_p2[pop] = (double) data -> genotype_counts[locus][pop][2] / (double) n[pop];
+    }
+
+    p1bar = (2.0 * n[0] - counts[0] + 2.0 * n[1] - counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
+    p2bar = (counts[0] + counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
+
+    SSG = SSI = SSP = 0;
+    for (pop = 0; pop < 2; pop++) {
+      SSG += (double) n[pop] * (p1[pop] - frq_hmzgtes_p1[pop]);
+      SSG += (double) n[pop] * (p2[pop] - frq_hmzgtes_p2[pop]);
+
+      SSI += (double) n[pop] * (p1[pop] + frq_hmzgtes_p1[pop] - 2.0 * pow (p1[pop], 2.0) );
+      SSI += (double) n[pop] * (p2[pop] + frq_hmzgtes_p2[pop] - 2.0 * pow (p2[pop], 2.0) );
+
+      SSP += (double) n[pop] * pow (p1[pop] - p1bar, 2.0);
+      SSP += (double) n[pop] * pow (p2[pop] - p2bar, 2.0);
+    }
+    SSP *= 2.0;
+    MSG = SSG / (double) nt;
+    MSI = SSI / ((double) nt - 2.0);
+    MSP = SSP;
+
+    // FST = (MSP - MSI) / (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+    // FIS = (MSI - MSG) / (MSI + MSG);
+ 
+    numFst += (MSP - MSI);
+    denFst += (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+    
+    numFis += (MSI - MSG);
+    denFis += (MSI + MSG);
+
+  }
+
+  global_result -> Fst = numFst/denFst;
+  global_result -> Fis = numFis/denFis;
+  global_result -> Ne = (int) tau * (1.0 - global_result -> Fst) / 2.0 / global_result -> Fst;
+
+}
 

@@ -34,6 +34,8 @@
 
 #include "main.h"
 
+#define ML_NAN   (0.0 / 0.0) 
+
 double drift_sim(const gsl_rng * r, double freq, unsigned int Ne);
 
 void counts_sim(const gsl_rng * r, unsigned int Ne,
@@ -41,7 +43,7 @@ void counts_sim(const gsl_rng * r, unsigned int Ne,
                 const unsigned int sample_size[],
                 unsigned int sim_genotype_counts[2][3]);
 
-double FST_2pop_from_genotypes_counts (unsigned int one_locus_genotype_counts[2][3]);
+double one_locus_FST (unsigned int one_locus_genotype_counts[2][3]);
 
 double p_value(const gsl_rng * r, unsigned int Ne, double Fis,
                int nbr_simuls, unsigned int one_locus_genotype_counts[2][3]);
