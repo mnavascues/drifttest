@@ -38,4 +38,8 @@ void write_results(data_struct *data,
                    global_result_struct *global_result,
                    char *filename);
 
+void write_globalres(global_result_struct *global_result,
+                     char *filename);
+
+
 #endif

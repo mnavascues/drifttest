@@ -52,3 +52,20 @@ void write_results(data_struct *data,
   fclose(outfile);
 }
 
+
+void write_globalres(global_result_struct *global_result,
+                     char *filename)
+{
+
+  FILE *outfile = NULL;
+
+  if ((outfile = fopen(filename,"w")) == NULL) {
+    fprintf(stderr,"%s: file not found\n",filename);
+    exit(EXIT_FAILURE);
+  }
+
+  fprintf(outfile,"         Fst         Fis          Ne\n");
+  fprintf(outfile,"%12.8f%12.8f%12d\n",global_result -> Fst,global_result -> Fis,global_result -> Ne);
+  fclose(outfile);
+}
+

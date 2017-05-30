@@ -27,10 +27,13 @@
 #include <errno.h>           // system error numbers
 #include <stdio.h>           // standrad input/output
 #include <stdlib.h>          // general purpose standard library
+#include <string.h>
 #include <getopt.h>          // for parsing command line arguments
 #include <math.h>            // for computing common mathematical operations
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
+//#include <omp.h>             // OpenMP (parallel computing)
+
 
 #include "main.h"
 #include "popgen.h"
@@ -175,6 +178,7 @@ int main (int argc, char *argv[])
   global_result.FST = (double *) malloc(data.nbr_loci * sizeof(double));
   global_result.pvalue = (double *) malloc(data.nbr_loci * sizeof(double));
 
+// #pragma omp parallel ???????????????????????????????????????
 
   for (locus = 0; locus < data.nbr_loci; locus++){
     one_locus_genotype_counts[0][0] = data.genotype_counts[locus][0][0];
@@ -208,7 +212,12 @@ int main (int argc, char *argv[])
   }
 
   write_results(&data,&global_result,results_filename);
-
+  strcat(results_filename,"global");
+  write_globalres(&global_result,results_filename);
+  
+  printf ("Fst = %f\n",global_result.Fst);
+  printf ("Fis = %f\n",global_result.Fis);
+  printf ("Ne  = %d\n",global_result.Ne);
 
   // need to free memory here
   gsl_rng_free (r);
