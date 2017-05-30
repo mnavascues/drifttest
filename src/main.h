@@ -28,7 +28,7 @@
 
 #define GLOBAL_VARIABLE
 
-#define VERSION     "0.0.0"
+#define VERSION     "1.0.0"
 //#define LOGFILE     "results.log"
 //#define OUTFILE     "results.out"
 #define NBR_SIMULS  1e4
