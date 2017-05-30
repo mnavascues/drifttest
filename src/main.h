@@ -28,7 +28,7 @@
 
 #define GLOBAL_VARIABLE
 
-#define VERSION     "1.0.0"
+#define VERSION     "1.0.1"
 //#define LOGFILE     "results.log"
 //#define OUTFILE     "results.out"
 #define NBR_SIMULS  1e4
@@ -70,6 +70,7 @@ void print_version();
 GLOBAL_VARIABLE const char *program_name;
 GLOBAL_VARIABLE int tau;
 GLOBAL_VARIABLE double maf;
+GLOBAL_VARIABLE double fis;
 GLOBAL_VARIABLE unsigned long nbr_simuls;
 
 #endif

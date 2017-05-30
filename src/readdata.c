@@ -46,7 +46,7 @@ void read_data(data_struct *data,
   // read first line (number of individuals)
   data -> nbr_ind = 0;
   if ( fscanf(infile,"%d",&data -> nbr_ind) == 1){
-    printf("Reading number of individuals: %d \n", data -> nbr_ind);
+    printf("\n\nReading number of individuals: %d \n", data -> nbr_ind);
   } else {
     fprintf(stderr,"Failed to read number of individuals from file (line one)\n");
     check_infile();// program stops
@@ -193,7 +193,7 @@ void read_data(data_struct *data,
     freqMean = (freq1+freq2)/2.0;
     if (freqMean <= maf || freqMean >= (1.0 - maf) ){
       data -> maf[i] = 0;
-      printf("Locus %d will not be used in the analysis: minor allele frequency (%f) is lower than the threshold %f\n",i+1,freqMean,maf);
+      //printf("Locus %d will not be used in the analysis: minor allele frequency (%f) is lower than the threshold %f\n",i+1,freqMean,maf);
     }else{
       data -> maf[i] = 1;
     }
@@ -212,7 +212,7 @@ void read_data(data_struct *data,
   mean2 /= data -> nbr_loci;
 
 
-  printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
+  //printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
   printf("Mean (min/max) sample size across loci for sample 1; %f (%d,%d)\n",mean1,min1,max1);
   printf("Mean (min/max) sample size across loci for sample 2; %f (%d,%d)\n\n",mean2,min2,max2);
 

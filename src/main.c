@@ -50,6 +50,7 @@ int main (int argc, char *argv[])
   char *data_filename = "data/data.txt";
   char *results_filename = "results/results.txt";
   int locus;
+  int user_supplied_fis = 0;
   data_struct data;
   global_result_struct global_result;
   unsigned int one_locus_genotype_counts[2][3];
@@ -65,12 +66,18 @@ int main (int argc, char *argv[])
     {"seed",required_argument,NULL,1},
     {"tau",required_argument,NULL,2},
     {"maf",required_argument,NULL,3},
-    {"file",required_argument,NULL,4},
+    {"infile",required_argument,NULL,4},
+    {"outfile",required_argument,NULL,5},
+    {"fis",required_argument,NULL,6},
     {"help",no_argument,NULL,201},
     {"version",no_argument,NULL,202},
     {"test",no_argument,NULL,203},
     {NULL,0,NULL,0}
   };
+
+  //default values
+  maf = 0.0;
+  fis = 0.0;
 
   // parse command line arguments (with getopt_long_only function from getopt.h)
   program_name = argv[0];
@@ -87,11 +94,20 @@ int main (int argc, char *argv[])
         break;
       case 3 :
         maf = atof(optarg);
-        printf ("Minimum allele frequency (maf): %f\n", maf);
+        printf ("Minimum allele frequency threshold (maf): %f\n", maf);
         break;
       case 4 :
         data_filename = optarg;
         printf ("Input data file: %s\n", data_filename);
+        break;
+      case 5 :
+        results_filename = optarg;
+        printf ("Output results file: %s\n", results_filename);
+        break;
+      case 6 :
+        fis = atof(optarg);
+        user_supplied_fis = 1;
+        printf ("Inbreeding coefficient (Fis): %f\n", fis);
         break;
       case 201 :
         print_usage();
@@ -133,6 +149,18 @@ int main (int argc, char *argv[])
     fprintf(stderr, "Error! The value of option -maf has to be a number between 0 and 0.5\n");
     exit(EXIT_FAILURE);
   }
+  if (fis < -1 || fis > 1) {
+    fprintf(stderr, "fis: '%f' \n",fis);
+    fprintf(stderr, "Warning! The value of option -fis has to be a number between 0 and 1\n");
+    fprintf(stderr, "Reverting to default behaviour, Fis estimated from data\n");
+    user_supplied_fis = 0;
+  } else if (fis < 0.0) {
+    fprintf(stderr, "fis: '%f' \n",fis);
+    fprintf(stderr, "Warning! The value of option -fis has to be a number between 0 and 1\n");
+    fprintf(stderr, "A value of Fis=0.0 (random mating) will be used instead of a negative Fis\n");
+    fis=0.0;
+    user_supplied_fis = 1;
+  }
 
   // set seed for random number generator
   //printf ("Random number generator: ’%s’ \n", gsl_rng_name (r));
@@ -157,10 +185,18 @@ int main (int argc, char *argv[])
     one_locus_genotype_counts[1][2] = data.genotype_counts[locus][1][2];
     if (data.maf[locus] == 1){
       global_result.FST[locus] = one_locus_FST (one_locus_genotype_counts);
-      if (global_result.Fis < 0){
-        global_result.pvalue[locus] = p_value(r, global_result.Ne, 0.0, NBR_SIMULS, one_locus_genotype_counts);
-      }else{
-        global_result.pvalue[locus] = p_value(r, global_result.Ne, global_result.Fis, NBR_SIMULS, one_locus_genotype_counts);
+      if (user_supplied_fis == 0) {
+        if (global_result.Fis < 0){
+          global_result.pvalue[locus] = p_value(r, global_result.Ne, 0.0, NBR_SIMULS, one_locus_genotype_counts);
+        }else{
+          global_result.pvalue[locus] = p_value(r, global_result.Ne, global_result.Fis, NBR_SIMULS, one_locus_genotype_counts);
+        }
+      } else {
+        if (fis < 0){
+          global_result.pvalue[locus] = p_value(r, global_result.Ne, 0.0, NBR_SIMULS, one_locus_genotype_counts);
+        }else{
+          global_result.pvalue[locus] = p_value(r, global_result.Ne, fis, NBR_SIMULS, one_locus_genotype_counts);
+        }
       }
       //printf ("Locus %d: Fst = %f; p-value = %f\n", locus+1,global_result.FST[locus],global_result.pvalue[locus]);
     } else {
@@ -174,16 +210,7 @@ int main (int argc, char *argv[])
   write_results(&data,&global_result,results_filename);
 
 
-
-
-
-
-
-
-  
-
-
-
+  // need to free memory here
   gsl_rng_free (r);
   printf ("\ndrifttest has finished. Good bye!\n\n");
   return (EXIT_SUCCESS);
@@ -203,6 +230,12 @@ void print_usage()
   printf("-version\t\t print version\n");
   printf("-test\t\t\t print results of a set of tests on the code\n");
   printf("-seed\t\t\t initial seed for the random number generator (default: GSL default)\n");
+  printf("-maf\t\t\t minumium allele frequeuny threshold for including a locus in the analysis\n");
+  printf("    \t\t\t (default 0.0; only values from 0 to 0.5 admited).\n");
+  printf("-tau\t\t\t number of generation between the two time samples (no default value)\n");
+  printf("-fis\t\t\t inbreeding coefficient, Fis (by default estimated from data)\n");
+  printf("-infile\t\t\t input file name (default: \"data/data.txt\")\n");
+  printf("-outfile\t\t\t output file name (default: \"results/results.txt\")\n");
   exit(EXIT_SUCCESS);
 }
 
@@ -212,8 +245,6 @@ void print_version()
 {
   printf("You are running version %s\n",VERSION);
 }
-
-
 
 
 
