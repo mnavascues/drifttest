@@ -32,6 +32,7 @@
 //#define LOGFILE     "results.log"
 //#define OUTFILE     "results.out"
 #define NBR_SIMULS  1e4
+#define ML_NAN      (0.0 / 0.0)  
 
 // ---------------------
 // structure definitions
@@ -43,12 +44,15 @@ typedef struct {
   int nbr_loci;                    // Number of loci
   int **sample_size;               // sample size per locus per time-sample (after missing data)
   unsigned int ***genotype_counts; // counts of each genotype per locus per time-sample
+  int *maf;                        // 0:locus maf<threshold; 1:locus maf>=threshold
 } data_struct;
 
 typedef struct {
   double Fst; 
   double Fis;
   int Ne;
+  double *FST;
+  double *pvalue;
 } global_result_struct;
 
 

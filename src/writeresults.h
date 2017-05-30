@@ -23,30 +23,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _POPGEN_H
-#define _POPGEN_H
+
+#ifndef _WRITERESULTS_H
+#define _WRITERESULTS_H
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>            // for computing common mathematical operations
-#include <gsl/gsl_rng.h>     // GSL: random number generation
-#include <gsl/gsl_randist.h> // GSL: random number distributions
+#include <string.h>
 
 #include "main.h"
 
-#define ML_NAN   (0.0 / 0.0) 
 
-double drift_sim(const gsl_rng * r, double freq, unsigned int Ne);
+void write_results(data_struct *data,
+                   global_result_struct *global_result,
+                   char *filename);
 
-void counts_sim(const gsl_rng * r, unsigned int Ne,
-                double Fis, const unsigned int one_locus_genotype_counts[],
-                const unsigned int sample_size[],
-                unsigned int sim_genotype_counts[2][3]);
-
-double one_locus_FST (unsigned int one_locus_genotype_counts[2][3]);
-
-double p_value(const gsl_rng * r, unsigned int Ne, double Fis,
-               int nbr_simuls, unsigned int one_locus_genotype_counts[2][3]);
-
-void F_statistics (data_struct *data, global_result_struct *global_result);
 #endif

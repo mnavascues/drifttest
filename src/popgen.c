@@ -188,7 +188,7 @@ double p_value(const gsl_rng * r,
       if (sim_Fst >= obs_Fst) p_value += 1.0;
       sim++;
     }
-    if ((sim == nbr_simuls) && (p_value <= 30) && (nbr_simuls <= 1e6)) {
+    if ((sim == nbr_simuls) && (p_value <= 30) && (nbr_simuls <= 1e20)) {
       nbr_simuls *= 10;
     }
   }
@@ -227,59 +227,60 @@ void F_statistics (data_struct *data, global_result_struct *global_result){
   numFst = denFst = 0.0;
   numFis = denFis = 0.0;
   for (locus = 0; locus < data -> nbr_loci; locus++){
-    counts[0] = counts[1] = 0;
-    n[0] = n[1] = 0;
-    nt = n2 = 0;
-    nc = 0.0;
+    if (data -> maf[locus] == 1){
+      counts[0] = counts[1] = 0;
+      n[0] = n[1] = 0;
+      nt = n2 = 0;
+      nc = 0.0;
  
-    for (pop = 0; pop < 2; pop++) {
-      // get allele counts of allele 2
-      counts[pop] = data -> genotype_counts[locus][pop][0] * 2 + data -> genotype_counts[locus][pop][1]; 
-      // get sample sizes
-      n[pop] = data -> sample_size[locus][pop];
-    }
+      for (pop = 0; pop < 2; pop++) {
+        // get allele counts of allele 2
+        counts[pop] = data -> genotype_counts[locus][pop][0] * 2 + data -> genotype_counts[locus][pop][1]; 
+        // get sample sizes
+        n[pop] = data -> sample_size[locus][pop];
+      }
 
-    // get total sample size and other sample size terms for Weir and Cockerham
-    nt = n[0] + n[1];
-    n2 = (int) pow((double) n[0], 2.0) + (int) pow((double) n[1], 2.0);
-    nc = (double) nt - (double) n2 / (double) nt;
+      // get total sample size and other sample size terms for Weir and Cockerham
+      nt = n[0] + n[1];
+      n2 = (int) pow((double) n[0], 2.0) + (int) pow((double) n[1], 2.0);
+      nc = (double) nt - (double) n2 / (double) nt;
 
-    for (pop = 0; pop < 2; pop++) {
-      p1[pop] = (2.0 * n[pop] - counts[pop]) / (2.0 * n[pop]);
-      p2[pop] = counts[pop] / (2.0 * n[pop]);
+      for (pop = 0; pop < 2; pop++) {
+        p1[pop] = (2.0 * n[pop] - counts[pop]) / (2.0 * n[pop]);
+        p2[pop] = counts[pop] / (2.0 * n[pop]);
  
-      frq_hmzgtes_p1[pop] = (double) data -> genotype_counts[locus][pop][0] / (double) n[pop];
-      frq_hmzgtes_p2[pop] = (double) data -> genotype_counts[locus][pop][2] / (double) n[pop];
-    }
+        frq_hmzgtes_p1[pop] = (double) data -> genotype_counts[locus][pop][0] / (double) n[pop];
+        frq_hmzgtes_p2[pop] = (double) data -> genotype_counts[locus][pop][2] / (double) n[pop];
+      }
 
-    p1bar = (2.0 * n[0] - counts[0] + 2.0 * n[1] - counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
-    p2bar = (counts[0] + counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
+      p1bar = (2.0 * n[0] - counts[0] + 2.0 * n[1] - counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
+      p2bar = (counts[0] + counts[1]) / (2.0 * n[0] + 2.0 * n[1]);
 
-    SSG = SSI = SSP = 0;
-    for (pop = 0; pop < 2; pop++) {
-      SSG += (double) n[pop] * (p1[pop] - frq_hmzgtes_p1[pop]);
-      SSG += (double) n[pop] * (p2[pop] - frq_hmzgtes_p2[pop]);
+      SSG = SSI = SSP = 0;
+      for (pop = 0; pop < 2; pop++) {
+        SSG += (double) n[pop] * (p1[pop] - frq_hmzgtes_p1[pop]);
+        SSG += (double) n[pop] * (p2[pop] - frq_hmzgtes_p2[pop]);
 
-      SSI += (double) n[pop] * (p1[pop] + frq_hmzgtes_p1[pop] - 2.0 * pow (p1[pop], 2.0) );
-      SSI += (double) n[pop] * (p2[pop] + frq_hmzgtes_p2[pop] - 2.0 * pow (p2[pop], 2.0) );
+        SSI += (double) n[pop] * (p1[pop] + frq_hmzgtes_p1[pop] - 2.0 * pow (p1[pop], 2.0) );
+        SSI += (double) n[pop] * (p2[pop] + frq_hmzgtes_p2[pop] - 2.0 * pow (p2[pop], 2.0) );
 
-      SSP += (double) n[pop] * pow (p1[pop] - p1bar, 2.0);
-      SSP += (double) n[pop] * pow (p2[pop] - p2bar, 2.0);
-    }
-    SSP *= 2.0;
-    MSG = SSG / (double) nt;
-    MSI = SSI / ((double) nt - 2.0);
-    MSP = SSP;
+        SSP += (double) n[pop] * pow (p1[pop] - p1bar, 2.0);
+        SSP += (double) n[pop] * pow (p2[pop] - p2bar, 2.0);
+      }
+      SSP *= 2.0;
+      MSG = SSG / (double) nt;
+      MSI = SSI / ((double) nt - 2.0);
+      MSP = SSP;
 
-    // FST = (MSP - MSI) / (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
-    // FIS = (MSI - MSG) / (MSI + MSG);
+      // FST = (MSP - MSI) / (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+      // FIS = (MSI - MSG) / (MSI + MSG);
  
-    numFst += (MSP - MSI);
-    denFst += (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
+      numFst += (MSP - MSI);
+      denFst += (MSP + ((double) nc - 1.0) * MSI + (double) nc * MSG);
     
-    numFis += (MSI - MSG);
-    denFis += (MSI + MSG);
-
+      numFis += (MSI - MSG);
+      denFis += (MSI + MSG);
+    }
   }
 
   global_result -> Fst = numFst/denFst;

@@ -41,6 +41,7 @@ void print_test(const gsl_rng * r)
 
   char *data_filename = "data/data.txt";
   data_struct data;
+  global_result_struct global_result;
 
   // title
   printf("You are running a set of tests to check DriftTest code\n\n");
@@ -123,13 +124,18 @@ void print_test(const gsl_rng * r)
   
   printf ("Number of individuals in data file = %d\n", data.nbr_ind);
   printf ("Number of loci in data file        = %d\n", data.nbr_loci);
-  //printf ("First individual belong to population = %d\n", data.pop[0]);
-  //printf ("data.genotypes[0][0] = %d\n", data.genotypes[0][0]);
-  //printf ("data.genotypes[0][1] = %d\n", data.genotypes[0][1]);
-  //printf ("data.genotypes[0][2] = %d\n", data.genotypes[0][2]);
-  //printf ("data.genotypes[1][0] = %d\n", data.genotypes[1][0]);
-  //printf ("data.genotypes[1][1] = %d\n", data.genotypes[1][1]);
-  //printf ("data.genotypes[1][2] = %d\n", data.genotypes[1][2]);
+  printf ("data.genotype_counts[0][0][0] = %d\n", data.genotype_counts[0][0][0]);
+  printf ("data.genotype_counts[0][0][1] = %d\n", data.genotype_counts[0][0][1]);
+  printf ("data.genotype_counts[0][0][2] = %d\n", data.genotype_counts[0][0][2]);
+  printf ("data.genotype_counts[0][1][0] = %d\n", data.genotype_counts[0][1][0]);
+  printf ("data.genotype_counts[0][1][1] = %d\n", data.genotype_counts[0][1][1]);
+  printf ("data.genotype_counts[0][1][2] = %d\n\n\n", data.genotype_counts[0][1][2]);
+
+  F_statistics(&data,&global_result);
+
+  printf ("Fst = %f\n",global_result.Fst);
+  printf ("Fis = %f\n",global_result.Fis);
+  printf ("Ne  = %d\n",global_result.Ne);
 
 
 }

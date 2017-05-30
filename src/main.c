@@ -35,6 +35,8 @@
 #include "main.h"
 #include "popgen.h"
 #include "test.h"
+#include "readdata.h"
+#include "writeresults.h"
 
 int main (int argc, char *argv[])
 {
@@ -46,7 +48,11 @@ int main (int argc, char *argv[])
 
   unsigned long seed  = 0;
   char *data_filename = "data/data.txt";
-  //data_struct data;
+  char *results_filename = "results/results.txt";
+  int locus;
+  data_struct data;
+  global_result_struct global_result;
+  unsigned int one_locus_genotype_counts[2][3];
 
   //declare random number generator and set type to “Mersenne Twister” (MT19937)
   gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
@@ -122,20 +128,50 @@ int main (int argc, char *argv[])
     fprintf(stderr, "Error! The value of option -tau has to be positive\n");
     exit(EXIT_FAILURE);
   }
+  if (maf < 0 || maf > 0.5) {
+    fprintf(stderr, "tau: '%f' \n",maf);
+    fprintf(stderr, "Error! The value of option -maf has to be a number between 0 and 0.5\n");
+    exit(EXIT_FAILURE);
+  }
 
   // set seed for random number generator
   //printf ("Random number generator: ’%s’ \n", gsl_rng_name (r));
   gsl_rng_set(r,seed);
 
-  //read_data(&data,data_filename);
+  read_data(&data,data_filename);
 
 
 
+  F_statistics(&data,&global_result);
+
+  global_result.FST = (double *) malloc(data.nbr_loci * sizeof(double));
+  global_result.pvalue = (double *) malloc(data.nbr_loci * sizeof(double));
 
 
+  for (locus = 0; locus < data.nbr_loci; locus++){
+    one_locus_genotype_counts[0][0] = data.genotype_counts[locus][0][0];
+    one_locus_genotype_counts[0][1] = data.genotype_counts[locus][0][1];
+    one_locus_genotype_counts[0][2] = data.genotype_counts[locus][0][2];
+    one_locus_genotype_counts[1][0] = data.genotype_counts[locus][1][0];
+    one_locus_genotype_counts[1][1] = data.genotype_counts[locus][1][1];
+    one_locus_genotype_counts[1][2] = data.genotype_counts[locus][1][2];
+    if (data.maf[locus] == 1){
+      global_result.FST[locus] = one_locus_FST (one_locus_genotype_counts);
+      if (global_result.Fis < 0){
+        global_result.pvalue[locus] = p_value(r, global_result.Ne, 0.0, NBR_SIMULS, one_locus_genotype_counts);
+      }else{
+        global_result.pvalue[locus] = p_value(r, global_result.Ne, global_result.Fis, NBR_SIMULS, one_locus_genotype_counts);
+      }
+      //printf ("Locus %d: Fst = %f; p-value = %f\n", locus+1,global_result.FST[locus],global_result.pvalue[locus]);
+    } else {
+      global_result.FST[locus] = one_locus_FST (one_locus_genotype_counts);
+      global_result.pvalue[locus] = ML_NAN;
+      //printf ("Locus %d: Fst = %f; p-value = NA\n", locus+1,global_result.FST[locus]);
+      //printf ("Locus %d: Fst = %f; p-value = %f\n", locus+1,global_result.FST[locus],global_result.pvalue[locus]);
+    }
+  }
 
-
-
+  write_results(&data,&global_result,results_filename);
 
 
 

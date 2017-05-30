@@ -36,6 +36,7 @@ void read_data(data_struct *data,
   int count,dummy,nloci,nind;
   int min1,max1,min2,max2;
   double mean1,mean2;
+  double freq1,freq2,freqMean;
 
   if ((infile = fopen(filename,"r")) == NULL) {
     fprintf(stderr,"%s: file not found\n",filename);
@@ -44,12 +45,22 @@ void read_data(data_struct *data,
 
   // read first line (number of individuals)
   data -> nbr_ind = 0;
-  fscanf(infile,"%d",&data -> nbr_ind);
+  if ( fscanf(infile,"%d",&data -> nbr_ind) == 1){
+    printf("Reading number of individuals: %d \n", data -> nbr_ind);
+  } else {
+    fprintf(stderr,"Failed to read number of individuals from file (line one)\n");
+    check_infile();// program stops
+  }
   while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r')); // read until finding escape character
 
   // read second line (number of loci)
   data -> nbr_loci = 0;
-  fscanf(infile,"%d",&data -> nbr_loci);
+  if ( fscanf(infile,"%d",&data -> nbr_loci) == 1){
+    printf("Reading number of loci: %d \n", data -> nbr_loci);
+  } else {
+    fprintf(stderr,"Failed to read number of loci from file (line two)\n");
+    check_infile();// program stops
+  }
   while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r')); // read until finding escape character
 
   // allocation memory for genotype counts and sample size
@@ -70,6 +81,8 @@ void read_data(data_struct *data,
       data -> sample_size[i][j]=0;
     }
   }
+  data -> maf = (int *) malloc(data -> nbr_loci * sizeof(int));
+
 
   //verification number of loci and individuals
   nind = 0;
@@ -85,8 +98,8 @@ void read_data(data_struct *data,
           check_infile();// program stops
         }
         if (count != -9 && count != 0 && count != 1 && count != 2) {
-          fprintf(stderr,"%s: unexpected count of alleles at individual %d, locus %d.\n",filename,(nind + 1), (nloci + 1));
-          fprintf(stderr,"Valid values: -9, 0, 1, 2.\n");
+          fprintf(stderr,"%s: unexpected count of alleles or time-sample ID at individual %d, column %d.\n",filename,(nind + 1), (nloci + 1));
+          fprintf(stderr,"Valid values: -9 for missing data; 0, 1 or 2 copies of reference allele; 1 or 2 for time-sample ID\n");
           check_infile();// program stops
         }
       }
@@ -120,32 +133,51 @@ void read_data(data_struct *data,
     fprintf(stderr,"%s: the number of ind (%d) is larger than expected (%d).\n",filename,nind,data -> nbr_ind);
     check_infile();// program stops
   }
-  printf("OK\n");
+  // printf("OK\n");
 
   // rewind file and re-read first two lines
   rewind(infile);
-  fscanf(infile,"%d",&data -> nbr_ind);
+  if ( fscanf(infile,"%d",&data -> nbr_ind) != 1){
+    fprintf(stderr,"Failed to read number of individuals from file (line one); failed at second pass\n");
+    check_infile();// program stops
+  }
   while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
-  fscanf(infile,"%d",&data -> nbr_loci);
+  if ( fscanf(infile,"%d",&data -> nbr_loci) != 1){
+     fprintf(stderr,"Failed to read number of loci from file (line two); failed at second pass\n");
+     check_infile();// program stops
+  }
   while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
 
   // read genotypes
   for (j = 0; j < data -> nbr_ind; ++j) {
     // read first value of line : sample of origin of the individual
-    fscanf(infile,"%d",&pop);
-    for (i = 0; i < data -> nbr_loci; ++i) {
-      fscanf(infile,"%d",&count);
-      if (pop == 1){
-        if (count == 0) ++data -> genotype_counts[i][0][0];
-        if (count == 1) ++data -> genotype_counts[i][0][1];
-        if (count == 2) ++data -> genotype_counts[i][0][2];
-      }else if (pop == 2){
-        if (count == 0) ++data -> genotype_counts[i][1][0];
-        if (count == 1) ++data -> genotype_counts[i][1][1];
-        if (count == 2) ++data -> genotype_counts[i][1][2];
+    if ( fscanf(infile,"%d",&pop) == 1){
+      for (i = 0; i < data -> nbr_loci; ++i) {
+        if (fscanf(infile,"%d",&count)== 1){
+          if (pop == 1){
+            if (count == 0) ++data -> genotype_counts[i][0][0];
+            if (count == 1) ++data -> genotype_counts[i][0][1];
+            if (count == 2) ++data -> genotype_counts[i][0][2];
+          }else if (pop == 2){
+            if (count == 0) ++data -> genotype_counts[i][1][0];
+            if (count == 1) ++data -> genotype_counts[i][1][1];
+            if (count == 2) ++data -> genotype_counts[i][1][2];
+          }else{
+            fprintf(stderr,"Unexpected time-sample ID at individual %d \n", j);
+            fprintf(stderr,"Valid values: 1 or 2 (for the recent and ancient sampling times respectively)\n");
+            check_infile();// program stops
+          }
+        } else{
+          fprintf(stderr,"Failed to read genotype of locus %d individual %d \n",i,j);
+          check_infile();// program stops
+        }
       }
+    } else {
+      fprintf(stderr,"Failed to read time-sample ID (first column) of individual %d \n",j);
+      check_infile();// program stops
     }
   }
+
   fclose(infile);
   min1 = 2147483647;
   max1 = -2147483648;
@@ -156,6 +188,15 @@ void read_data(data_struct *data,
   for (i = 0; i < data -> nbr_loci; ++i){
     data -> sample_size[i][0]  = data -> genotype_counts[i][0][0] + data -> genotype_counts[i][0][1] + data -> genotype_counts[i][0][2];
     data -> sample_size[i][1]  = data -> genotype_counts[i][1][0] + data -> genotype_counts[i][1][1] + data -> genotype_counts[i][1][2];
+    freq1 = ((double)data -> genotype_counts[i][0][1] + 2.0 * (double)data -> genotype_counts[i][0][2]) / (double)data -> sample_size[i][0] / 2.0;
+    freq2 = ((double)data -> genotype_counts[i][1][1] + 2.0 * (double)data -> genotype_counts[i][1][2]) / (double)data -> sample_size[i][1] / 2.0;
+    freqMean = (freq1+freq2)/2.0;
+    if (freqMean <= maf || freqMean >= (1.0 - maf) ){
+      data -> maf[i] = 0;
+      printf("Locus %d will not be used in the analysis: minor allele frequency (%f) is lower than the threshold %f\n",i+1,freqMean,maf);
+    }else{
+      data -> maf[i] = 1;
+    }
     mean1 += data -> sample_size[i][0]; 
     mean2 += data -> sample_size[i][1]; 
     if (data -> sample_size[i][0] > max1) max1 = data -> sample_size[i][0];
@@ -172,11 +213,8 @@ void read_data(data_struct *data,
 
 
   printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
-  printf("Mean (max/min) sample size across loci for sample 1; %f (%d,%d)\n",mean1,min1,max1);
-  printf("Mean (max/min) sample size across loci for sample 2; %f (%d,%d)\n\n",mean2,min2,max2);
-
-  
-
+  printf("Mean (min/max) sample size across loci for sample 1; %f (%d,%d)\n",mean1,min1,max1);
+  printf("Mean (min/max) sample size across loci for sample 2; %f (%d,%d)\n\n",mean2,min2,max2);
 
 }
 
