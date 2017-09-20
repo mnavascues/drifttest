@@ -28,11 +28,11 @@
 
 #define GLOBAL_VARIABLE
 
-#define VERSION     "1.0.2"
+#define VERSION     "1.0.3"
 //#define LOGFILE     "results.log"
 //#define OUTFILE     "results.out"
 #define NBR_SIMULS  1e4
-#define ML_NAN      (0.0 / 0.0)  
+#define ML_NAN      (0.0 / 0.0)
 
 // ---------------------
 // structure definitions
@@ -48,7 +48,7 @@ typedef struct {
 } data_struct;
 
 typedef struct {
-  double Fst; 
+  double Fst;
   double Fis;
   int Ne;
   double *FST;
@@ -57,7 +57,7 @@ typedef struct {
 
 
 // -----------------
-//  local functions 
+//  local functions
 // -----------------
 
 void print_usage();
