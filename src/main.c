@@ -145,7 +145,7 @@ int main (int argc, char *argv[])
   }
   if (optind < argc)
   {
-    fprintf(stderr, "Error! Unrecognized option(s) ");
+    fprintf(stderr, RED "Error! Unrecognized option(s) " RESET);
     while (optind < argc)
       printf ("`%s' ", argv[optind++]);
     printf ("\n");
@@ -153,36 +153,36 @@ int main (int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   if (seed == 0) {
-    fprintf(stderr, "Warning: seed has value ’%lu’; using default GSL seed\n", seed);
+    fprintf(stderr, RED "Warning: seed has value ’%lu’; using default GSL seed\n" RESET, seed);
   }
   if (tau <= 0) {
-    fprintf(stderr, "tau: '%d' \n",tau);
-    fprintf(stderr, "Error! The value of option -tau has to be positive\n");
+    fprintf(stderr, RED "tau: '%d' \n" RESET,tau);
+    fprintf(stderr, RED "Error! The value of option -tau has to be positive\n" RESET);
     exit(EXIT_FAILURE);
   }
   if (maf < 0 || maf > 0.5) {
-    fprintf(stderr, "tau: '%f' \n",maf);
-    fprintf(stderr, "Error! The value of option -maf has to be a number between 0 and 0.5\n");
+    fprintf(stderr, RED "tau: '%f' \n" RESET,maf);
+    fprintf(stderr, RED "Error! The value of option -maf has to be a number between 0 and 0.5\n" RESET);
     exit(EXIT_FAILURE);
   }
   if (fis < -1 || fis > 1) {
-    fprintf(stderr, "fis: '%f' \n",fis);
-    fprintf(stderr, "Warning! The value of option -fis has to be a number between 0 and 1\n");
-    fprintf(stderr, "Reverting to default behaviour, Fis estimated from data\n");
+    fprintf(stderr, RED "fis: '%f' \n",fis);
+    fprintf(stderr, RED "Warning! The value of option -fis has to be a number between 0 and 1\n" RESET);
+    fprintf(stderr, RED "Reverting to default behaviour, Fis estimated from data\n" RESET);
     user_supplied_fis = 0;
   } else if (fis < 0.0) {
-    fprintf(stderr, "fis: '%f' \n",fis);
-    fprintf(stderr, "Warning! The value of option -fis has to be a number between 0 and 1\n");
-    fprintf(stderr, "A value of Fis=0.0 (random mating) will be used instead of a negative Fis\n");
+    fprintf(stderr, RED "fis: '%f' \n",fis);
+    fprintf(stderr, RED "Warning! The value of option -fis has to be a number between 0 and 1\n" RESET);
+    fprintf(stderr, RED "A value of Fis=0.0 (random mating) will be used instead of a negative Fis\n" RESET);
     fis=0.0;
     user_supplied_fis = 1;
   }
   if (n_threads < 0) {
-    printf("Error! The value of option -threads has to be positive\n");
+    printf(RED "Error! The value of option -threads has to be positive\n" RESET);
     exit(EXIT_FAILURE);
   }
   if (n_threads > omp_get_max_threads()) {
-    printf("Error! The value of option -threads has to be less than the maximum number of threads available\n");
+    printf(RED "Error! The value of option -threads has to be less than the maximum number of threads available\n" RESET);
     exit(EXIT_FAILURE);
   }
   if (n_threads == 0) {
@@ -273,8 +273,8 @@ void print_usage()
   printf("    \t\t\t (default 0.0; only values from 0 to 0.5 admited).\n");
   printf("-tau\t\t\t number of generation between the two time samples (no default value)\n");
   printf("-fis\t\t\t inbreeding coefficient, Fis (by default estimated from data)\n");
-  printf("-infile\t\t\t input file name (default: \"data/data.txt\")\n");
-  printf("-outfile\t\t\t output file name (default: \"results/results.txt\")\n");
+  printf("-infile\t\t\t input file name (default: \"data.txt\"; must me located in data folder; 100 characters long maximum)\n");
+  printf("-outfile\t\t output file name; 100 characters long maximum\n");
   exit(EXIT_SUCCESS);
 }
 

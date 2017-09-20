@@ -34,6 +34,10 @@
 #define NBR_SIMULS  1e4
 #define ML_NAN      (0.0 / 0.0)
 
+// for text color
+#define RED   "\x1B[31m"
+#define RESET "\x1B[0m"
+
 // ---------------------
 // structure definitions
 // ---------------------
