@@ -71,6 +71,5 @@ GLOBAL_VARIABLE const char *program_name;
 GLOBAL_VARIABLE int tau;
 GLOBAL_VARIABLE double maf;
 GLOBAL_VARIABLE double fis;
-GLOBAL_VARIABLE unsigned long nbr_simuls;
 
 #endif

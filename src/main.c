@@ -32,7 +32,7 @@
 #include <math.h>            // for computing common mathematical operations
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
-//#include <omp.h>             // OpenMP (parallel computing)
+#include <omp.h>             // OpenMP (parallel computing)
 
 
 #include "main.h"
@@ -50,16 +50,19 @@ int main (int argc, char *argv[])
   printf ("between two time samples of the same population.\n\n\n");
 
   unsigned long seed  = 0;
-  char *data_filename = "data/data.txt";
-  char *results_filename = "results/results.txt";
+  char data_filename[106];
+    strcpy(data_filename,"data/data.txt");
+  char results_filename[124];
+    strcpy(results_filename,"results/locus_by_locus");
+  char multilocus_results_filename[120];
+    strcpy(multilocus_results_filename,"results/multilocus");
+  int n_threads = 0;
   int locus;
   int user_supplied_fis = 0;
   data_struct data;
   global_result_struct global_result;
   unsigned int one_locus_genotype_counts[2][3];
-
-  //declare random number generator and set type to “Mersenne Twister” (MT19937)
-  gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
+  gsl_rng * r;
 
   //declare variables for parsing command line arguments
   int opt = 0;
@@ -72,6 +75,7 @@ int main (int argc, char *argv[])
     {"infile",required_argument,NULL,4},
     {"outfile",required_argument,NULL,5},
     {"fis",required_argument,NULL,6},
+    {"threads",required_argument,NULL,7},
     {"help",no_argument,NULL,201},
     {"version",no_argument,NULL,202},
     {"test",no_argument,NULL,203},
@@ -100,17 +104,25 @@ int main (int argc, char *argv[])
         printf ("Minimum allele frequency threshold (maf): %f\n", maf);
         break;
       case 4 :
-        data_filename = optarg;
+        strcpy(data_filename,"data/");
+        strcat(data_filename,optarg);
         printf ("Input data file: %s\n", data_filename);
         break;
       case 5 :
-        results_filename = optarg;
+        strcpy(results_filename,"results/locus_by_locus_");
+        strcpy(multilocus_results_filename,"results/multilocus_");
+        strcat(results_filename,optarg);
+        strcat(multilocus_results_filename,optarg);
         printf ("Output results file: %s\n", results_filename);
+        printf ("Multilocus output results file: %s\n", multilocus_results_filename);
         break;
       case 6 :
         fis = atof(optarg);
         user_supplied_fis = 1;
         printf ("Inbreeding coefficient (Fis): %f\n", fis);
+        break;
+      case 7 :
+        n_threads = atoi(optarg);
         break;
       case 201 :
         print_usage();
@@ -122,6 +134,7 @@ int main (int argc, char *argv[])
 	seed = 123456;
 	tau  = 10;
 	maf  = 0.1;
+        r = gsl_rng_alloc (gsl_rng_mt19937);
 	gsl_rng_set(r,seed);
         print_test(r);
         exit(EXIT_SUCCESS);
@@ -164,23 +177,42 @@ int main (int argc, char *argv[])
     fis=0.0;
     user_supplied_fis = 1;
   }
+  if (n_threads < 0) {
+    printf("Error! The value of option -threads has to be positive\n");
+    exit(EXIT_FAILURE);
+  }
+  if (n_threads > omp_get_max_threads()) {
+    printf("Error! The value of option -threads has to be less than the maximum number of threads available\n");
+    exit(EXIT_FAILURE);
+  }
+  if (n_threads == 0) {
+    n_threads = omp_get_max_threads();  // omp_get_max_threads() returns the same value whether executing from a serial or parallel region
+  }
+  omp_set_num_threads(n_threads);
 
-  // set seed for random number generator
-  //printf ("Random number generator: ’%s’ \n", gsl_rng_name (r));
-  gsl_rng_set(r,seed);
 
   read_data(&data,data_filename);
 
-
-
   F_statistics(&data,&global_result);
+  printf ("Fst = %f\n",global_result.Fst);
+  printf ("Fis = %f\n",global_result.Fis);
+  printf ("Ne  = %d\n",global_result.Ne);
 
   global_result.FST = (double *) malloc(data.nbr_loci * sizeof(double));
   global_result.pvalue = (double *) malloc(data.nbr_loci * sizeof(double));
 
-// #pragma omp parallel ???????????????????????????????????????
+#pragma omp parallel for schedule(guided) private(one_locus_genotype_counts,r)
 
   for (locus = 0; locus < data.nbr_loci; locus++){
+    //printf ("Locus = %d of %d\n ",locus+1,data.nbr_loci);
+
+    //declare random number generator and set type to "Mersenne Twister" (MT19937)
+    r = gsl_rng_alloc (gsl_rng_mt19937);
+
+    // set seed for random number generator
+    //printf ("Random number generator: ’%s’ \n", gsl_rng_name (r));
+    gsl_rng_set(r,locus+seed); //change to time so it is different in each run
+
     one_locus_genotype_counts[0][0] = data.genotype_counts[locus][0][0];
     one_locus_genotype_counts[0][1] = data.genotype_counts[locus][0][1];
     one_locus_genotype_counts[0][2] = data.genotype_counts[locus][0][2];
@@ -209,18 +241,16 @@ int main (int argc, char *argv[])
       //printf ("Locus %d: Fst = %f; p-value = NA\n", locus+1,global_result.FST[locus]);
       //printf ("Locus %d: Fst = %f; p-value = %f\n", locus+1,global_result.FST[locus],global_result.pvalue[locus]);
     }
+    gsl_rng_free (r);
+
   }
 
   write_results(&data,&global_result,results_filename);
-  strcat(results_filename,"global");
-  write_globalres(&global_result,results_filename);
-  
-  printf ("Fst = %f\n",global_result.Fst);
-  printf ("Fis = %f\n",global_result.Fis);
-  printf ("Ne  = %d\n",global_result.Ne);
+  write_globalres(&global_result,multilocus_results_filename);
 
-  // need to free memory here
-  gsl_rng_free (r);
+
+  // need to free memory here?
+
   printf ("\ndrifttest has finished. Good bye!\n\n");
   return (EXIT_SUCCESS);
 }
@@ -229,7 +259,7 @@ int main (int argc, char *argv[])
 
 
 
-// PRINT USAGE 
+// PRINT USAGE
 
 void print_usage()
 {
@@ -248,20 +278,9 @@ void print_usage()
   exit(EXIT_SUCCESS);
 }
 
-// PRINT VERSION 
+// PRINT VERSION
 
 void print_version()
 {
   printf("You are running version %s\n",VERSION);
 }
-
-
-
-
-
-
-
-
-
-
-

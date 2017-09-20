@@ -167,6 +167,8 @@ double p_value(const gsl_rng * r,
   unsigned int sample_size[2];
   unsigned int sim_genotype_counts[2][3];
   double p_value = 0.0;
+  
+  //printf ("Number of simulations = %d\n",nbr_simuls);
 
   for (pop = 0; pop < 2; pop++) {
     sample_size[pop] = one_locus_genotype_counts[pop][0] + one_locus_genotype_counts[pop][1] + one_locus_genotype_counts[pop][2];
@@ -188,8 +190,9 @@ double p_value(const gsl_rng * r,
       if (sim_Fst >= obs_Fst) p_value += 1.0;
       sim++;
     }
-    if ((sim == nbr_simuls) && (p_value <= 30) && (nbr_simuls <= 1e20)) {
+    if ((sim == nbr_simuls) && (p_value == 0.0) && (nbr_simuls <= 1e10)) {
       nbr_simuls *= 10;
+      printf ("Number of simulations = %d\n",nbr_simuls);
     }
   }
   p_value /= (double) nbr_simuls;

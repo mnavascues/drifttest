@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -ggdb -I/usr/include
+CFLAGS = -Wall -Wextra -fopenmp -ggdb -I/usr/include
 LIBS = -L/usr/lib -lgsl -lgslcblas -lm
 CC = gcc
 
