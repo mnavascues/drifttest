@@ -190,11 +190,31 @@ double p_value(const gsl_rng * r,
       if (sim_Fst >= obs_Fst) p_value += 1.0;
       sim++;
     }
-    if ((sim == nbr_simuls) && (p_value == 0.0) && (nbr_simuls <= 1e10)) {
-      nbr_simuls *= 10;
-      printf ("Number of simulations = %d\n",nbr_simuls);
+  }
+  if ((p_value == 0.0)) {
+    nbr_simuls = 1e6;
+    printf ("Number of simulations increased to = %d\n",nbr_simuls);
+    while (sim < nbr_simuls) {
+      counts_sim(r, Ne, Fis, one_locus_genotype_counts[0], sample_size, sim_genotype_counts);
+      for (pop = 0; pop < 2; pop++)
+      {
+        allele_freq[pop] = (sim_genotype_counts[pop][0] * 2 + sim_genotype_counts[pop][1]) / (2.0 * sample_size[pop]);
+      }
+      mean_allele_freq = (allele_freq[0] + allele_freq[1]) / 2.0;
+
+      if ((mean_allele_freq >= maf) && (mean_allele_freq <= (1.0 - maf)))
+      {
+        sim_Fst = one_locus_FST(sim_genotype_counts);
+        if (sim_Fst >= obs_Fst) p_value += 1.0;
+        sim++;
+      }
     }
   }
+  if (p_value == 0.0){
+    nbr_simuls = 1e7;
+    p_value = 1;
+  } 
+
   p_value /= (double) nbr_simuls;
   return p_value; 
 }

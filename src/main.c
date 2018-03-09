@@ -104,15 +104,14 @@ int main (int argc, char *argv[])
         printf ("Minimum allele frequency threshold (maf): %f\n", maf);
         break;
       case 4 :
-        strcpy(data_filename,"data/");
-        strcat(data_filename,optarg);
+        strcpy(data_filename,optarg);
         printf ("Input data file: %s\n", data_filename);
         break;
       case 5 :
-        strcpy(results_filename,"results/locus_by_locus_");
-        strcpy(multilocus_results_filename,"results/multilocus_");
-        strcat(results_filename,optarg);
-        strcat(multilocus_results_filename,optarg);
+        strcpy(results_filename,optarg);
+        strcpy(multilocus_results_filename,optarg);
+        strcat(results_filename,"locus_by_locus");
+        strcat(multilocus_results_filename,"multilocus");
         printf ("Output results file: %s\n", results_filename);
         printf ("Multilocus output results file: %s\n", multilocus_results_filename);
         break;
@@ -275,6 +274,7 @@ void print_usage()
   printf("-fis\t\t\t inbreeding coefficient, Fis (by default estimated from data)\n");
   printf("-infile\t\t\t input file name (default: \"data.txt\"; must me located in data folder; 100 characters long maximum)\n");
   printf("-outfile\t\t output file name; 100 characters long maximum\n");
+  printf("-threads\t\t number of threads, otherwise selected authomatically\n");
   exit(EXIT_SUCCESS);
 }
 
