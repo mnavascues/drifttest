@@ -31,6 +31,7 @@
 #include <math.h>            // for computing common mathematical operations
 #include <gsl/gsl_rng.h>     // GSL: random number generation
 #include <gsl/gsl_randist.h> // GSL: random number distributions
+#include <gsl/gsl_cdf.h>     // GSL: for cdf for probability distributions
 
 #include "main.h"
 
@@ -49,4 +50,5 @@ double p_value(const gsl_rng * r, unsigned int Ne, double Fis,
                int nbr_simuls, unsigned int one_locus_genotype_counts[2][3]);
 
 void F_statistics (data_struct *data, global_result_struct *global_result);
+void F_statistics_bootstrap (data_struct *data, global_result_struct *global_result);
 #endif

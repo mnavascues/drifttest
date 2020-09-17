@@ -53,8 +53,17 @@ typedef struct {
 
 typedef struct {
   double Fst;
+  double Fst_lower;
+  double Fst_upper;
   double Fis;
+  double Fis_lower;
+  double Fis_upper;
   int Ne;
+  int Ne_lower;
+  int Ne_upper;
+  double sigma;
+  double sigma_lower;
+  double sigma_upper;
   double *FST;
   double *pvalue;
 } global_result_struct;

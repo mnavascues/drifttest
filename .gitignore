@@ -2,3 +2,4 @@ src/*.o
 bin/drifttest
 *~
 results/*
+data2/*

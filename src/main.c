@@ -192,10 +192,18 @@ int main (int argc, char *argv[])
 
   read_data(&data,data_filename);
 
-  F_statistics(&data,&global_result);
-  printf ("Fst = %f\n",global_result.Fst);
-  printf ("Fis = %f\n",global_result.Fis);
-  printf ("Ne  = %d\n",global_result.Ne);
+  //F_statistics(&data,&global_result);
+  //printf ("Fst = %f\n",global_result.Fst);
+  //printf ("Fis = %f\n",global_result.Fis);
+  //printf ("Ne  = %d\n",global_result.Ne);
+
+  F_statistics_bootstrap(&data,&global_result);
+  printf ("Fst   = %f, 95CI(%f,%f)\n",global_result.Fst,global_result.Fst_lower,global_result.Fst_upper);
+  printf ("Fis   = %f, 95CI(%f,%f)\n",global_result.Fis,global_result.Fis_lower,global_result.Fis_upper);
+  printf ("Ne    = %d, 95CI(%d,%d)\n",global_result.Ne,global_result.Ne_lower,global_result.Ne_upper);
+  printf ("sigma = %f, 95CI(%f,%f)\n",global_result.sigma,global_result.sigma_lower,global_result.sigma_upper);
+
+
 
   global_result.FST = (double *) malloc(data.nbr_loci * sizeof(double));
   global_result.pvalue = (double *) malloc(data.nbr_loci * sizeof(double));

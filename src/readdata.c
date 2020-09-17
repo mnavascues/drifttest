@@ -205,14 +205,22 @@ void read_data(data_struct *data,
     if (data -> sample_size[i][1] < min2) min2 = data -> sample_size[i][1];
     //printf("Genotypes locus %d pop1: %d/%d/%d\n",i,data -> genotype_counts[i][0][0],data -> genotype_counts[i][0][1],data -> genotype_counts[i][0][2]);
     //printf("Sample size locus %d pop1: %d\n",i,data -> sample_size[i][0]);
+    if (data -> sample_size[i][0] == 0){
+      data -> maf[i] = 0;
+      //printf("Locus %d will not be used in the analysis: sample size in pop1 (%d) is 0\n",i+1,data -> sample_size[i][0]);
+    }
     //printf("Genotypes locus %d pop2: %d/%d/%d\n",i,data -> genotype_counts[i][1][0],data -> genotype_counts[i][1][1],data -> genotype_counts[i][1][2]);
     //printf("Sample size locus %d pop2: %d\n",i,data -> sample_size[i][1]);
+    if (data -> sample_size[i][1] == 0){
+      data -> maf[i] = 0;
+      //printf("Locus %d will not be used in the analysis: sample size in pop2 (%d) is 0\n",i+1,data -> sample_size[i][1]);
+    }
   }
   mean1 /= data -> nbr_loci;
   mean2 /= data -> nbr_loci;
 
 
-  //printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
+  printf("The data consist in %d individuals typed at %d loci\n",data -> nbr_ind,data -> nbr_loci);
   printf("Mean (min/max) sample size across loci for sample 1; %f (%d,%d)\n",mean1,min1,max1);
   printf("Mean (min/max) sample size across loci for sample 2; %f (%d,%d)\n\n",mean2,min2,max2);
 

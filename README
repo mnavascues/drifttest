@@ -1,0 +1,13 @@
+  printf("usage: %s [ options ]\n",program_name);
+  printf("valid options are :\n");
+  printf("-help\t\t\t print this message\n");
+  printf("-version\t\t print version\n");
+  printf("-test\t\t\t print results of a set of tests on the code\n");
+  printf("-seed\t\t\t initial seed for the random number generator (default: GSL default)\n");
+  printf("-maf\t\t\t minumium allele frequeuny threshold for including a locus in the analysis\n");
+  printf("    \t\t\t (default 0.0; only values from 0 to 0.5 admited).\n");
+  printf("-tau\t\t\t number of generation between the two time samples (no default value)\n");
+  printf("-fis\t\t\t inbreeding coefficient, Fis (by default estimated from data)\n");
+  printf("-infile\t\t\t input file name (default: \"data.txt\"; must me located in data folder; 100 characters long maximum)\n");
+  printf("-outfile\t\t output file name; 100 characters long maximum\n");
+  printf("-threads\t\t number of threads, otherwise selected authomatically\n");
