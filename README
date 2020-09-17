@@ -1,13 +1,91 @@
-  printf("usage: %s [ options ]\n",program_name);
-  printf("valid options are :\n");
-  printf("-help\t\t\t print this message\n");
-  printf("-version\t\t print version\n");
-  printf("-test\t\t\t print results of a set of tests on the code\n");
-  printf("-seed\t\t\t initial seed for the random number generator (default: GSL default)\n");
-  printf("-maf\t\t\t minumium allele frequeuny threshold for including a locus in the analysis\n");
-  printf("    \t\t\t (default 0.0; only values from 0 to 0.5 admited).\n");
-  printf("-tau\t\t\t number of generation between the two time samples (no default value)\n");
-  printf("-fis\t\t\t inbreeding coefficient, Fis (by default estimated from data)\n");
-  printf("-infile\t\t\t input file name (default: \"data.txt\"; must me located in data folder; 100 characters long maximum)\n");
-  printf("-outfile\t\t output file name; 100 characters long maximum\n");
-  printf("-threads\t\t number of threads, otherwise selected authomatically\n");
+#############
+# drifttest #  
+#############
+
+This program runs a temporal Fst outlier approach for the detection of loci under selection. It estimates effective population size and selfing rate from all loci and based on those estimates test each locus for outlier Fst values that could be indicative of selection during the period between the two samples interval. The procedure is described in "Power and limits of selection genome scans on temporal data from a selfing population" by Miguel Navascués, Arnaud Becheler, Laurène Gay, Joëlle Ronfort, Karine Loridon and Renaud Vitalis doi:10.1101/2020.05.06.080895.
+
+Input
+=====
+
+Genetic data must be provided in a text file in which the fisrt line indicates the total number of individuals, the second line the number of loci. Subsequent liones contain the genetic data in the following format: first column indicates the time of sampling with an arbitrary number (e.g. 1 and 2), them one column per locus indicating the number of copies of the reference allele that individual holds (i.e. 0, 1 or 2), missing data are indicated with -9. An example data file is found in folder "data" which is reproduce here below:
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+27
+7
+1	0	2	2	2	0	0	1
+1	1	1	0	0	1	2	0
+1	0	2	2	2	1	0	0
+1	1	1	0	0	1	2	0
+1	0	2	2	1	1	0	0
+1	1	1	1	0	-9	2	0
+1	0	1	2	2	1	0	0
+1	1	1	1	0	1	2	0
+1	0	1	2	2	2	0	0
+1	1	1	0	0	1	2	0
+1	0	2	2	2	2	0	0
+1	1	1	0	0	1	2	0
+2	1	1	0	0	1	2	0
+2	2	1	1	2	0	2	0
+2	2	2	1	1	1	1	0
+2	1	1	0	0	1	2	0
+2	2	1	1	2	0	2	0
+2	2	2	1	1	1	1	0
+2	1	1	1	2	1	2	0
+2	2	1	2	2	0	2	0
+2	2	2	1	1	1	2	0
+2	1	1	1	0	1	2	0
+2	2	1	1	2	0	2	0
+2	2	2	1	1	1	1	0
+2	1	1	0	0	1	2	0
+2	2	1	1	2	0	2	0
+2	2	2	1	1	1	-9	0
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Usage
+=====
+
+In the comand line type the name of the executable and indicate flags with the options:
+
+$ drifttest [options]
+
+Options
+-------
+
+-help
+  print the list of options
+
+-version
+  print version of program
+
+-test
+  print results of a set of tests on the code for debugging
+
+-seed
+  initial seed for the random number generator (default: GSL default)
+
+-maf
+  minumium allele frequeuny threshold for including a locus in the analysis (default 0.0; only values from 0 to 0.5 admited).
+
+-tau
+  number of generation between the two time samples (no default value, it must be specified except for options -help, -version -test
+
+-fis
+  user specified inbreeding coefficient value, Fis (by default estimated from data). It can be used to force analysis as outcrossing by setting -fis 0.0
+
+-infile
+  input file name (default: "data.txt"; must me located in data folder; 100 characters long maximum)
+
+-outfile
+  prefix for output files; 100 characters long maximum
+
+-threads
+  number of threads, for parallel computing, otherwise selected automatically
+
+Output
+======
+
+Two files are produced as output, names with the output prefix + _multilocus and output prefix + _locus_by_locus
+
+output_multilocus contains the multilocus estimates for Fst, Fis and Ne
+
+output_locus_by_locus contains, for each locus, an estimate of the Fst and an estimate of the p-value for the outlier test.
