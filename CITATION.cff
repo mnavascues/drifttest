@@ -3,10 +3,10 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: "de Navascués"
   given-names: "Miguel"
-  orcid: "https://orcid.org/"
+  orcid: "https://orcid.org/0000-0001-8342-6047"
 - family-names: "Vitalis"
   given-names: "Renaud"
-  orcid: "https://orcid.org/0000-0000-0000-0000"
+  orcid: "https://orcid.org/0000-0001-7096-3089"
 title: "DriftTest. a computer program to detect selection from temporal genetic differentiation in partially selfing populations"
 version: 1.0.6
 doi: 10.5281/zenodo.1194662
